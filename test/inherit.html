@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+    function Person(option){
+        this.name = option&&option.name?option.name:'wang';
+        this.age = option&&option.age?option.age:23;
+
+    }
+
+    Person.prototype = {
+        select:function(){
+            if(this.age===23){
+                console.log('刚刚好,就他了')
+            }else{
+                console.log('糟糕，不合适')
+            }
+        },
+
+        bad:function(){
+            if(this.name==='wang'){
+                console.log('bad,隔壁老王')
+            }else{
+                console.log('糟糕，他不是老王')
+            }
+        }
+    };
+
+
+    var body = new Person({name:'zhang',age:'22'});
+    body.select();
+    body.bad();
+
+
+    var body1 = new Person();
+    body1.select();
+    body1.bad()
+</script>
+</body>
+</html>

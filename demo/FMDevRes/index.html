@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>jQuery.Gantt</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=IE8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="css/style.css" type="text/css" rel="stylesheet">
+    <style type="text/css">
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            padding: 0 0 50px 0;
+        }
+
+        h1 {
+            margin: 40px 0 20px 0;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #DDD;
+            margin-top: 50px;
+            margin-bottom: 25px;
+        }
+
+        table th:first-child {
+            width: 150px;
+        }
+
+        .github-corner:hover .octo-arm {
+            animation: octocat-wave 560ms ease-in-out
+        }
+
+        @keyframes octocat-wave {
+
+            0%,
+            100% {
+                transform: rotate(0)
+            }
+
+            20%,
+            60% {
+                transform: rotate(-25deg)
+            }
+
+            40%,
+            80% {
+                transform: rotate(10deg)
+            }
+        }
+
+        @media (max-width:500px) {
+            .github-corner:hover .octo-arm {
+                animation: none
+            }
+
+            .github-corner .octo-arm {
+                animation: octocat-wave 560ms ease-in-out
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid" style="padding: 0; margin: 0;">
+        <div class="gantt" style="margin:0;"></div>
+    </div>
+    <div id='myModal'></div>
+
+    <script src="data/employee.js"></script>
+    <script src="data/programe.js"></script>
+    <script src="data/plan.js"></script>
+    <script src="js/GanttQuery.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.fn.gantt.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+
+    <script>
+        $(function () {
+            "use strict";
+
+            var ganttQuery = new GanttQuery({
+                employee: employee,
+                programe: programe,
+                plan: plan
+            });
+
+            var demoSource = ganttQuery.query();
+
+            $(".gantt").gantt({
+                source: demoSource,
+                navigate: "scroll",
+                scale: "days",
+                maxScale: "weeks",
+                minScale: "days",
+                itemsPerPage: 10,
+                scrollToToday: false,
+                useCookie: true,
+                onItemClick: function (data) {
+                    // console.log("onItemClick", data);
+                    alert('项目经理：' + data.pm + '\n' + '描述：' + data.desc);
+                },
+                onAddClick: function (dt, rowId) {
+                    // alert("onAddClick");
+                },
+                onRender: function () {
+                    // if (window.console && typeof console.log === "function") {
+                    //     console.log("chart rendered");
+                    // }
+                }
+            });
+
+            // $(".gantt").popover({
+            //     selector: ".bar",
+            //     title: function () {
+            //         return this.textContent;
+            //     },
+            //     container: '.gantt',
+            //     content: function () {
+            //         return "内容";
+            //     },
+            //     trigger: "hover",
+            //     placement: "auto right"
+            // });
+
+        });
+    </script>
+
+</body>
+
+</html>

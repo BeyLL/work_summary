@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="./map.css">
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="fengmap.min.js"></script>
+</head>
+<body>
+<div id="map" style="height:100%"></div>
+<div id="topBtn">
+    <div id="rightBtn">
+        <span class="btn" id="btn">点击旋转</span>
+        <span class="btn" id="sim">模拟导航</span>
+        <span class="btn" id="sim2">切换点位</span>
+        <span class="btn" id="theme">切换主题</span>
+    </div>
+</div>
+<div id="group"></div>
+<div id="search">
+    <ul class="list"></ul>
+    <input type="text" placeholder="搜你所想"/>
+</div>
+
+<script type="text/javascript">
+    var flag = false;
+    var navi;  //导航对象
+    var customFloor;  //楼层控件
+    var pointStartEnd = [];    //起始点/终点
+    var searchFun;  //搜索对象
+
+
+    var startPoint;  //起点
+    var endPoint;   //终点
+    var toggleFlag;  //切换主题
+
+    //地图参数配置
+    var options = {
+        // tile: true,
+        defaultMaxTiltAngle: 89,
+        defaultTiltAngle: 89,
+        defaultControlsPose: fengmap.FMDirection.NORTH,
+        focusAlphaMode: true,
+        focusAlpha: .3,
+        //必要，地图应用名称，通过蜂鸟云后台创建
+        appName: '蜂鸟研发SDK_2_0',
+        key: '57c7f309aca507497d028a9c00207cf8',
+        defaultThemeName: './2002'
+    };
+
+    //导航线配置
+    var naviOptions = {
+        //模拟导航定位图标行进的速度，单位m/s。默认5m/s。
+        speed: 5,
+        //导航结果文字描述内容的语言类型参数, 目前支持中英文。参考FMLanguaeType。
+        naviLanguage: fengmap.FMLanguageType.ZH,
+        //导航中路径规划模式, 支持最短路径、最优路径两种。默认为MODULE_SHORTEST, 最短路径。
+        naviMode: fengmap.FMNaviMode.MODULE_SHORTEST,
+        //导航中的路线规划梯类优先级, 默认为PRIORITY_DEFAULT, 详情参考FMNaviPriority。
+        naviPriority: fengmap.FMNaviPriority.PRIORITY_DEFAULT,
+        //设置起点或终点, 是否自动进行路径规划计算。默认为true
+        //autoRoute: false,
+        //起终点图片标注的与楼层之间的高度偏移设置。默认是6。
+        imageMarkerHeight: 6,
+        //导航图标
+        locationMarkerUrl: 'images/pointer.png',
+        //设置Marker尺寸
+        locationMarkerSize: 32,
+        //模拟导航时是否地图跟随,默认true
+        followPosition: true,
+        //模拟导航时是否改变地图角度，默认false
+        followAngle: true,
+        //是否在导航开始时改变地图的倾斜角度,默认为true
+        changeTiltAngle: true,
+        //导航跟随倾斜角度
+        tiltAngle: 80,
+        //模拟导航开始时地图的显示比例尺, 默认值为282,表示1:282的地图比例尺。对应比例尺级别21。
+        scale: 282,
+        //导航线与楼层之间的高度偏移设置。默认是1。
+        lineMarkerHeight: 1,
+        // 设置导航线的样式
+        lineStyle: {
+            // 导航线样式
+            lineType: fengmap.FMLineType.FMARROW,
+            // 设置线的宽度
+            lineWidth: 6
+        }
+    };
+
+
+    //楼层控件显示配置
+    var btnFloorCtlOpt = {
+        //默认在右下角
+        position: fengmap.FMControlPosition.RIGHT_TOP,
+        //初始楼层按钮显示个数配置。默认显示5层,其他的隐藏，可滚动查看
+        showBtnCount: 6,
+        //初始是否是多层显示，默认单层显示
+        allLayer: false,
+        //位置x,y的偏移量
+        offset: {
+            x: -30,
+            y: 350
+        }
+    };
+
+    //对地图类进行操作(这样只要new一个对象就是地图，并且可以拿这个类的方法进行操作)
+    function AppMap(options) {
+        Map.call(this, {mapId: options.mapId});
+        var aMap = this.fmap;
+        aMap.on('loadComplete', function () {
+            console.log('加载完成');
+            //加载控件
+        });
+    }
+
+    AppMap.prototype = new Map();
+    AppMap.constructor = Map;
+
+    AppMap.prototype.changeStatu = function () {
+        //点击地图旋转功能
+        flag = !flag;
+        this.fmap.controls.autoRotate = flag;
+    };
+
+    AppMap.prototype.changeTheme = function () {
+
+    };
+
+    //生成地图类
+    function Map(option) {
+        if (!option) return;
+        var mapId = option.mapId;
+        var mapOption = {
+            //必要，地图容器
+            container: document.getElementById('map'),
+            //地图数据位置
+            mapServerURL: './' + mapId,
+            //主题数据位置
+            // mapThemeURL: './theme',
+        };
+
+        var op = $.extend(true, {}, options, mapOption);
+        var fmap = new fengmap.FMMap(op);
+        fmap.openMapById(mapId, function (error) {
+            console.log('地图Id', mapId, error);
+        });
+
+        fmap.on('loadComplete', function () {
+            console.log('加载地图完成')
+        });
+
+        this.fmap = fmap;
+
+    }
+
+    //导航生成
+    function createNav(map) {
+        //初始化导航对象
+        var naviOp = $.extend({}, naviOptions, {'map': map});
+        navi = new fengmap.FMNavigation(naviOp);
+    }
+
+    //楼层控件生成
+    function ceateFloors(map, groups) {
+        groups.map(function (item) {
+            if (item.gid === map.focusGroupID) {
+                $("#group").append($("<span class='active' data-gid='" + item.gid + "'></span>").html(item.gid + '楼'))
+            } else {
+                $("#group").append($("<span data-gid='" + item.gid + "'></span>").html(item.gid + '楼'))
+            }
+
+        });
+
+
+        $("#group span").on("click", function () {
+            map.focusGroupID = $(this).data('gid');
+            $(this).addClass('active').siblings().removeClass('active')
+        })
+
+    }
+
+    //搜索内容
+    function searchContent(params) {
+        var contentRequest = new fengmap.FMSearchRequest();
+        $("#search .list").empty();
+        if(!params.keyword) return;
+
+
+        //配置keyword参数
+        if (params.keyword && params.keyword) {
+            contentRequest.keyword = params.keyword;
+        }
+
+        //配置groupID参数
+        if (params.groupID) {
+            contentRequest.groupID = params.groupID
+        }
+
+        //配置FID参数
+        if (params.FID) {
+            contentRequest.FID = params.FID;
+        }
+        //配置typeID参数
+        if (params.typeID != null) {
+            contentRequest.typeID = params.typeID;
+        }
+
+        //配置nodeType参数
+        if (params.nodeType != null) {
+            contentRequest.nodeType = params.nodeType;
+        }
+
+        searchFun.query(contentRequest, function (result) {
+            result.map(function (item) {
+                $("#search .list").append($("<li></li>").html(item.name))
+            })
+        })
+    }
+
+    var map = new AppMap({mapId: '10347'});
+
+    var fmp = map.fmap;
+    fmp.on('loadComplete', function () {
+        //自定义楼层
+        var groupIDs = fmp.listGroups;
+        ceateFloors(fmp, groupIDs);
+        $("#topBtn").show();
+        $("#search").show();
+        createNav(fmp);
+        searchFun = new fengmap.FMSearchAnalyser(fmp);
+    });
+
+
+    //地图点击事件
+    fmp.on('mapClickNode', function (event) {
+        if (!event.nodeType) return;
+        //如果点位已经大于两个，清空数据，导航线，重新绘制
+
+        // addMarkers(event.eventInfo.coord)
+        if (navi) {
+            pointStartEnd.push(event.eventInfo.coord);
+            if (pointStartEnd.length === 1) {
+                startPoint = event.eventInfo.coord;
+                navi.setStartPoint({
+                    x: event.eventInfo.coord.x,
+                    y: event.eventInfo.coord.y,
+                    groupID: fmp.focusGroupID,
+                    url: 'images/start.png',
+                    size: 32
+                });
+
+            } else if (pointStartEnd.length === 2) {
+                endPoint = event.eventInfo.coord;
+                navi.setEndPoint({
+                    x: event.eventInfo.coord.x,
+                    y: event.eventInfo.coord.y,
+                    groupID: fmp.focusGroupID,
+                    url: 'images/end.png',
+                    size: 32
+                });
+
+                pointStartEnd = [];
+                // 画出导航线
+                navi.drawNaviLine();
+            }
+
+        }
+    });
+
+
+    //点击旋转按钮地图旋转或停止
+    $("#btn").on('click', function () {
+        map.changeStatu()
+    });
+
+    //模拟导航
+    $("#sim").on('click', function () {
+        if (navi) {
+            navi.simulate();
+        }
+    });
+
+    //模拟导航点位切换返回
+    $("#sim2").on("click", function () {
+        if (navi) {
+            navi.setStartPoint({
+                x: endPoint.x,
+                y: endPoint.y,
+                groupID: fmp.focusGroupID,
+                url: 'images/start.png',
+                size: 32
+            });
+
+            navi.setEndPoint({
+                x: startPoint.x,
+                y: startPoint.y,
+                groupID: fmp.focusGroupID,
+                url: 'images/end.png',
+                size: 32
+            });
+
+        }
+
+    });
+
+    //切换主题
+    $("#theme").on('click', function () {
+        if (!fmp) return;
+        //修改主题属性
+        if (!toggleFlag) {
+            fmp.themeName = '2001';
+            toggleFlag = true;
+        } else {
+            fmp.themeName = '2002';
+            toggleFlag = false;
+        }
+    });
+
+    //搜索功能
+    $("#search input").on('keyup', function () {
+        searchContent({keyword: $(this).val().trim(), groupID: fmp.focusGroupID})
+    });
+
+    var layer;
+    var im;
+
+    function addMarkers(map, point) {
+        //获取当前聚焦楼层
+        var group = map.getFMGroup(map.focusGroupID);
+
+        layer = group.getOrCreateLayer('imageMarker');
+        im = new fengmap.FMImageMarker({
+            //标注x坐标点
+            x: point.x,
+            //标注y坐标点
+            y: point.y,
+            //设置图片路径
+            url: 'images/false.png',
+            //设置图片显示尺寸
+            size: 48,
+        });
+
+        //设置图片显示尺寸
+        layer.addMarker(im)
+    }
+</script>
+</body>
+</html>
