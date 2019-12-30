@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            /*text-align: center;*/
+            overflow: hidden;
+        }
+
+        #draw {
+            width:300px;
+            height: 200px;
+            background: #D0D0D0;
+        }
+    </style>
+</head>
+<body>
+<canvas id="draw"></canvas>
+<script>
+    var draw = document.getElementById('draw');
+    var context = draw.getContext("2d");
+    var points = [];
+    var x, y;
+    context.strokeStyle = 'red';
+    context.lineWidth = 0.1;
+
+    //点击位置距离上/左的距离
+    function lineDis(event) {
+        x = event.layerX;   //上部距离
+        y = event.layerY;   //左边距离
+        points.push({x: x, y: y});
+        createLine({x: x, y: y});
+        addLine({x:x,y:y})
+    }
+
+    //移动时执行
+    // function moveLine(event) {
+    //     // if (!points.length) return;
+    //     x = event.layerX;   //上部距离
+    //     y = event.layerY;   //左边距离
+    //     addLine({x: x, y: y})
+    // }
+
+    //进行绘制
+    function createLine(point) {
+        if (!points.length) return;
+        if (points.length%2===1) {
+            context.moveTo(point.x, point.y);
+            context.beginPath();
+        } else if(points.length%2===0) {
+            context.lineTo(point.x, point.y);
+            context.stroke();
+            context.closePath();
+        }
+    }
+
+
+    //鼠标移动时拉长
+    function addLine(point) {
+        if (points.length) {
+            context.lineTo(point.x, point.y)
+        }
+    }
+
+
+    // //点击事件
+    // draw.onmousedown = function (event) {
+    //     lineDis(event)
+    // };
+
+    //移动事件
+    draw.onmousemove = function (event) {
+        lineDis(event)
+    }
+</script>
+</body>
+</html>
