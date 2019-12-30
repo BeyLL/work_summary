@@ -43,6 +43,10 @@
         defaultControlsPose: fengmap.FMDirection.NORTH,
         focusAlphaMode: true,
         focusAlpha: .3,
+        //初始指北针的偏移量
+        compassOffset: [10, 5],
+        //指北针大小默认配置
+        compassSize: 48,
         //必要，地图应用名称，通过蜂鸟云后台创建
         appName: '蜂鸟研发SDK_2_0',
         key: '57c7f309aca507497d028a9c00207cf8',
@@ -123,7 +127,16 @@
         this.fmap.controls.autoRotate = flag;
     };
 
+    //改变主题
     AppMap.prototype.changeTheme = function () {
+
+        if (!toggleFlag) {
+            fmp.themeName = '2001';
+            toggleFlag = true;
+        } else {
+            fmp.themeName = '2002';
+            toggleFlag = false;
+        }
 
     };
 
@@ -184,8 +197,7 @@
     function searchContent(params) {
         var contentRequest = new fengmap.FMSearchRequest();
         $("#search .list").empty();
-        if(!params.keyword) return;
-
+        if (!params.keyword) return;
 
         //配置keyword参数
         if (params.keyword && params.keyword) {
@@ -224,6 +236,20 @@
     fmp.on('loadComplete', function () {
         //自定义楼层
         var groupIDs = fmp.listGroups;
+        fmp.compass.setBgImage('./images/compass_bg.png');
+        fmp.compass.setFgImage('./images/compass_fg.png');
+        fmp.showCompass = true;
+        fmp.on('mapClickCompass', function () {
+            fmp.rotateTo({
+                //设置角度
+                to: 0,
+                //动画持续时间，默认为。3秒
+                duration: .3,
+                callback: function () { //回调函数
+                    console.log('rotateTo complete!');
+                }
+            })
+        });
         ceateFloors(fmp, groupIDs);
         $("#topBtn").show();
         $("#search").show();
@@ -306,15 +332,7 @@
 
     //切换主题
     $("#theme").on('click', function () {
-        if (!fmp) return;
-        //修改主题属性
-        if (!toggleFlag) {
-            fmp.themeName = '2001';
-            toggleFlag = true;
-        } else {
-            fmp.themeName = '2002';
-            toggleFlag = false;
-        }
+        map.changeTheme()
     });
 
     //搜索功能

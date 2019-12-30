@@ -1,0 +1,63 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>媒体查询应用</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no,maximum-scale=1.0">
+    <style>
+        body {
+            background-color: lightblue;
+            text-indent: 2em;
+            -webkit-column-gap: 30px;
+            -webkit-column-rule: 2px dashed #FF0000;
+            -webkit-column-count: 3;
+        }
+
+        /*@media screen and (max-width: 400px) {*/
+        /*    body {*/
+        /*        background-color: lightgreen;*/
+        /*        -webkit-column-gap: 30px;*/
+        /*        -webkit-column-rule: 2px dashed #FF0000;*/
+        /*        -webkit-column-count: 2;*/
+        /*    }*/
+        /*}*/
+
+        /*@media screen and (min-width: 700px) {*/
+        /*    body {*/
+        /*        background-color: lightgreen;*/
+        /*        -webkit-column-gap: 30px;*/
+        /*        -webkit-column-rule: 2px dashed #FF0000;*/
+        /*        -webkit-column-count: 4;*/
+        /*    }*/
+        /*}*/
+
+        @media screen and (min-width: 400px ) and (max-width: 700px ) {
+            body {
+                background-color: lightgreen;
+                -webkit-column-gap: 30px;
+                -webkit-column-rule: 2px dashed #FF0000;
+                -webkit-column-count: 4;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="ele">我是谁</div>
+
+
+
+
+
+<p> 长期以来，网上流传所谓“朝鲜民众吃草充饥”和“朝鲜士兵一天只吃三个土豆”的新闻与传说，激起了很多中国人尤其是年轻人对朝鲜领导人的愤慨 。其实，真正了解朝鲜的人都清楚：朝鲜
+    人民为什么那样崇拜金家父子？因为金日成和金正日光明磊落，不搞官倒私倒，不许官员以权谋私、贪污腐化，始终把 人民的利益放在第一位；朝鲜坚持走社会主义道路， 实行社会主义公有制，住房、看病、上学等都是国家买单 。今天，朝鲜
+    人民的幸福指数，事实上远远超过了自称崛起、辉煌、盛世的天朝 人民，他们脸上的笑容 没有装饰的痕迹，是发自内心的，是无忧无虑的 。</p>
+</body>
+<script type="text/javascript">
+    var ele = document.getElementById('ele');
+    ele.onclick=function(){
+        window.open('http://www.baidu.com',"_blank", "toolbar=no,menubar=no,scrollbars=yes,resizable=yes,location=no,status=no,width=1000px");
+    }
+</script>
+</html>
+
